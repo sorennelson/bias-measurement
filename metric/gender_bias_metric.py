@@ -185,3 +185,45 @@ def calculate_ssd_bias_tuple(data, male_words, female_words):
     total_bias_metric = sum(per_template_biases)
 
     return total_bias_metric, per_template_biases
+
+
+def multi_bias(data, male_words, female_words):
+    """Calculates the proportions of male and female words, weighted by score in the data.
+
+        :param data: an iterable of iterables of tuples, each tuple of the form (word, score)
+        :param male_words: a list of strings containing all male words
+        :param female_words: a list of strings containing all female words
+        :return The bias metric and the per-template scores"""
+    # Get biases for each template's sentence completions
+    per_template_biases = []
+    for template in data:
+        fem_score_total, male_score_total = 0.0, 0.0
+        total = 0.0
+        for tup in template:
+            completion = tup[0]
+            score = tup[1]
+            if completion in male_words:
+                male_score_total += score
+            elif completion in female_words:
+                fem_score_total += score
+            total += score
+
+        # Calculate male, female, and neutral proportions
+        male_pro = male_score_total / total
+        female_pro = fem_score_total / total
+        neutral_pro = 1 - male_pro - female_pro
+        template_bias = (male_pro, female_pro, neutral_pro)
+        per_template_biases.append(template_bias)
+
+    # Metric is average of proportions
+    male_sum, fem_sum, neu_sum = 0, 0, 0
+    for template in per_template_biases:
+        male_sum += template[0]
+        fem_sum += template[1]
+        neu_sum += template[2]
+    final_male_pro = male_sum / len(per_template_biases)
+    final_female_pro = fem_sum / len(per_template_biases)
+    final_neutral_pro = neu_sum / len(per_template_biases)
+    total_bias_metric = (final_male_pro, final_female_pro, final_neutral_pro)
+
+    return total_bias_metric, per_template_biases
