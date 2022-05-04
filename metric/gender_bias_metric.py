@@ -227,3 +227,17 @@ def multi_bias(data, male_words, female_words):
     total_bias_metric = (final_male_pro, final_female_pro, final_neutral_pro)
 
     return total_bias_metric, per_template_biases
+
+
+def calculate_final_score(pos_bias, neg_bias):
+    """Calculates the final metric given bias proportions of male and female words, weighted by score in the data.
+
+        :param pos_bias: Positive bias proportion tuple (male, female, neutral)
+        :param neg_bias: Negative bias proportion tuple (male, female, neutral)
+        :return The holistic bias metric"""
+    pos_male_pro, pos_female_pro, pos_neutral_pro = pos_bias
+    neg_male_pro, neg_female_pro, neg_neutral_pro = neg_bias
+    
+    return ((pos_female_pro - pos_male_pro) / pos_neutral_pro) + ((neg_male_pro - neg_female_pro) / neg_neutral_pro) 
+    
+    
